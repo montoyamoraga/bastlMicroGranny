@@ -13,9 +13,7 @@ void listNameUp() {
 
   }
   while (!file.open(&root, name, O_READ)) {
-    //    hw.updateM
     hw.updateDisplay();
-    //    hw.displayText("SRCH");
     dt();
     name[1] += searchIndex;
     searchIndex++;
@@ -70,6 +68,7 @@ void upWithFirstLetter() {
   if (name[0] >= 58 && name[0] < 65) name[0] = 65;
   else if (name[0] >= 91) name[0] = 48, name[1] = 48;
 }
+
 void downWithFirstLetter() {
   name[0]--;
   if (name[0] < 65 && name[0] > 58) name[0] = 58;

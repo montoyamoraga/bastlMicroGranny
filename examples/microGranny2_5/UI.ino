@@ -1,4 +1,3 @@
-//#define KNOB_MOVEMENT 25
 #define LOOP_LENGTH_SHIFT 4 //8 for possition based
 #define SHIFT_SPEED_SYNC_SHIFT 5
 #define SHIFT_SPEED_SHIFT 7
@@ -29,16 +28,12 @@ boolean tuned = true;
 //TUNED, LEGATO, REPEAT, SYNC and RANDOM SHIFT
 uint32_t startGranule;
 
-
-
 #define DEFAULT_VELOCITY 127
 
 uint32_t longTime;
 boolean longPress;
 #define LONG_PERIOD 600
 #define MOVE_PERIOD 400
-
-//unsigned char updt;
 
 #define GRAIN_MAP_POINTS 8
 PROGMEM prog_uint16_t granSizeMap[16] = {
@@ -72,13 +67,8 @@ uint16_t curveMap(uint8_t value, uint8_t numberOfPoints, prog_uint16_t * tableMa
   return map16(value, inMin, inMax, outMin, outMax);
 }
 
-//curveMap(ll<<1,GRAIN_MAP_POINTS, granSizeMap)
-
 void UI() {
 
-
-  // if(!rec)
-  // hw.updateDisplay();
   if (rec) {
     hw.setColor(RED);
     hw.updateDisplay();
@@ -86,14 +76,9 @@ void UI() {
     hw.displayText("slct");
     renderRecordRoutine();
     hw.updateDisplay();
-    //       hw.updateKnobs();
 
-    //  hw.updateDisplay();
-    // delay(1);
   }
   else {
-
-    //if(!wave.isPlaying())
 
     hw.updateButtons();
     hw.updateDisplay();
@@ -151,16 +136,9 @@ void playSound(unsigned char _sound) {
     loadValuesFromMemmory(activeSound);
     startEnvelope(DEFAULT_VELOCITY, attackInterval);
 
-
-
   }
 
 }
-
-//long sizeOfFile;
-
-//samples per second*1000 - millisecond - how many samples?
-//x= sample Rate*number of samples / 1000
 
 boolean revMidi = false;
 void setEnd(unsigned char _sound) {
@@ -184,7 +162,7 @@ void setEnd(unsigned char _sound) {
       }
 
       else endPosition = sizeOfFile - 512;
-      if (reverse) seekPosition = endPosition; //, lastPosition=endPosition;
+      if (reverse) seekPosition = endPosition;
 
       else seekPosition = startPosition;
 
@@ -205,8 +183,6 @@ void loadValuesFromMemmory(unsigned char _sound) {
   }
   else if (_sound >= 23 && _sound < 66) notePitch = _sound - 23, _sound = activeSound, startGranule = sizeOfFile / 1024, startIndex = getVar(_sound, START);
   else _sound = activeSound, startGranule = sizeOfFile / 1024, startIndex = getVar(_sound, START);
-  // endIndex=getVar(_sound,END);
-  // if(startIndex>endIndex) startIndex=endIndex+3;
 
   startPosition = startIndex * startGranule;
   setSetting(_sound);
@@ -222,18 +198,17 @@ void loadValuesFromMemmory(unsigned char _sound) {
   }
 
 
-  wave.setSampleRate(sampleRateNow);//+pitchBendNow);
-  //  bit_set(PIN);
+  wave.setSampleRate(sampleRateNow);
+
   crush = getVar(_sound, CRUSH) << 1;
   wave.setCrush(crush);
   ll = getVar(_sound, LOOP_LENGTH);
   if (sync) loopLength = pgm_read_word_near(usefulLengths + (ll >> 3));
 
   else loopLength = curveMap(ll << 1, GRAIN_MAP_POINTS, granSizeMap); //ll<<LOOP_LENGTH_SHIFT; // novinka
-  //if(sync) shiftSpeed=((long)getVar(_sound,SHIFT_SPEED)-128)<<SHIFT_SPEED_SYNC_SHIFT;
-  //else
+
   shiftSpeed = (long)curveMap(getVar(_sound, SHIFT_SPEED), SHIFT_SPEED_POINTS, shiftSpeedMap) - 16000; //((long)getVar(_sound,SHIFT_SPEED)-128)<<SHIFT_SPEED_SHIFT; // novinka
-  //Serial.println(shiftSpeed);
+
   if (shiftSpeed < 0 && ll != 0) reverse = true;
   else reverse = false;
   setEnd(_sound);
@@ -243,8 +218,8 @@ void loadValuesFromMemmory(unsigned char _sound) {
   lastPosition = seekPosition;
   wave.resume();
 
-
 }
+
 int valueToSampleRate(int _value) {
   pitch = myMap(_value, 1023, 420);
   if (tuned) {
@@ -256,6 +231,7 @@ int valueToSampleRate(int _value) {
     return pgm_read_word_near(noteSampleRateTable + pitch / 10) + (pitch % 10) * pitchStep;
   }
 }
+
 void setSetting(unsigned char _sound) {
   setting = getVar(_sound, SETTING);
   repeat = bitRead(setting, REPEAT_BIT);
@@ -269,17 +245,14 @@ void setSetting(unsigned char _sound) {
   //
 }
 
-
 void startPlayback(unsigned char _sound) {
 
-  //if(wave.isPlaying()) stopSound();
   stopSound();
   playBegin(name, _sound); //,lastPosition=wave.getCurPosition(); //novinka
   lastMoved = 5;
   showSampleName();
 
 }
-
 
 void renderTweaking(unsigned char _page) {
 
@@ -646,22 +619,18 @@ void renderKnobs() {
     //int _varNow=getVar(_sound,_variable);
     int was = getVar(_sound, _variable);
 
-
     _knobValue = hw.knobValue(i);
     _lastKnobValue = hw.lastKnobValue(i);
 
     if (_variable == LOOP_LENGTH)  _knobValue = mapComp(_knobValue, LOW_T_L, HI_T_L, MID_V_L);
     else if (_variable == SHIFT_SPEED) {
       _knobValue = mapComp(_knobValue, LOW_T_S, HI_T_S, MID_V_S);
-      // if(_knobValue==511) _knobValue=512;
+
     }
 
 
     if (hw.knobFreezed(i)) {
       hw.setLed(knobLed[i], false);
-      //int _was=was;
-      // if(_variable==LOOP_LENGTH) _lastKnobValue=mapComp(_lastKnobValue,LOW_T_L,HI_T_L,MID_V_L);
-      // else if(_variable==SHIFT_SPEED) _lastKnobValue=mapComp(_lastKnobValue,LOW_T_S,HI_T_S,MID_V_S);
 
       if (inBetween( scale(_knobValue, KNOB_BITS, variableDepth[_variable]), scale(_lastKnobValue, KNOB_BITS, variableDepth[_variable]), was )  ) hw.unfreezeKnob(i); //|| (abs(_knobValue-_lastKnobValue)>25)//,showForWhile(knobLabel(page,i)),lastMoved==i; //external unfreez
       hw.setLastKnobValue(i, _knobValue);
@@ -674,9 +643,6 @@ void renderKnobs() {
 
       setVar(_sound, _variable, _value);
       // long _timeNow=millis();
-
-
-
 
       if (variableDepth[_variable] > 8) { //novink
         //if(((was>>2)!=(_value>>2))) { //minus větší než - ripple compensate // novinka
@@ -697,15 +663,6 @@ void renderKnobs() {
         whileShow = true;
         whileTime = millis();
       }
-
-      /*
-        if(hw.knobMoved(i) || was!=_value) {
-        lastMoved=i;
-        whileShow=true;
-        whileTime=millis();
-        }
-      */
-      //  if(was!=_value)
 
       boolean showSlash = false;
       if (lastMoved == i) {
@@ -755,32 +712,17 @@ void renderKnobs() {
   }
 
   // }
-  /*
-    else{
-    lastMoved=5;
-
-    }
-  */
 
   if (notesInBuffer == 0) for (uint8_t i = 0; i < NUMBER_OF_KNOBS; i++) hw.setLed(knobLed[i], false);
 }
 
 
-
 void renderDisplay() {
-
 
   if (shift) {
     //  hw.displayText("set ");
     // hw.displayChar(activeSound+49,3);
     for (uint8_t i = 0; i < 5; i++)  hw.setLed(bigButton[i], bitRead(setting, i));
-    /*
-      hw.setLed(bigButton[0],repeat);
-      hw.setLed(bigButton[1],tuned);
-      hw.setLed(bigButton[2],shiftDir);
-      hw.setLed(bigButton[3],bitRead(setting,SYNC_BIT));
-      hw.setLed(bigButton[4],legato);
-    */
     hw.setLed(bigButton[5], false);
 
   }
@@ -800,9 +742,7 @@ void renderDisplay() {
     showSampleName();
     noDots();
   }
-  //showValue(bytesAvailable);
 }
-
 
 
 void showForWhile(char *show) {
@@ -811,13 +751,11 @@ void showForWhile(char *show) {
   hw.displayText(show);
 }
 
-
 void blinkLed(unsigned char _LED, int interval) {
   if (++blinkCounter >= interval) blinkCounter = 0, blinkState = !blinkState;
   hw.setLed(_LED, blinkState);
   //
 }
-
 
 void randomize(unsigned char _sound) {
   for (uint8_t i = 0; i < 8; i++) setVar(_sound, i, rand(maxVal(i)));
@@ -859,45 +797,6 @@ void showSampleName() {
   hw.displayChar(name[1], 3);
 }
 
-
 void noDots() {
   for (uint8_t i = 0; i < 4; i++) hw.setDot(i, false);
 }
-
-/*
-  char* knobLabel(unsigned char _page,unsigned char _knob){
-
-  char label[NUMBER_OF_DIGITS];
-  for(int i=0;i<NUMBER_OF_DIGITS;i++) label[i]=pgm_read_word_near(labels + i + _knob + _page*PAGE_KNOB_LABEL_OFFSET);
-  return label;
-
-  }
-*/
-/*
-  void demo(){
-
-  currentBank=9;
-  currentPreset=5;
-  loadPreset(currentBank,currentPreset);
-  dimLeds();
-
-  for(int i=0;i<30;i++){
-  hw.setLed(bigButton[5],true);
-  unsigned char _note=rand(6);
-  putNoteIn(_note);
-  while(wave.isPlaying()){
-  hw.displayText("demo");
-  hw.update();
-  updateSound();
-  if(hw.buttonState(bigButton[5])) break;
-  }
-  putNoteOut(_note);
-  }
-  // clearBuffer();
-  chacha();
-
-  }
-
-
-
-*/
