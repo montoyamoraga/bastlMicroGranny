@@ -48,8 +48,6 @@
  * -power switch
  * -wooden enclosure
  * 
- * 
- * 
  */
  
 #define VERSION 0
@@ -58,16 +56,9 @@
 #include <WaveRP.h>
 #include <SdFatUtil.h>
 #include <ctype.h>
-//#include <mozzi_analog.cpp>
 #include <mg2HW.h>
-//#include <MIDI.h>
 #include <EEPROM.h>
 #include <avr/pgmspace.h>
-
-
-
-///#include <envelope.h>
-
 
 #define RECORD_RATE 22050 // try pot !!
 
@@ -90,8 +81,6 @@ SdFile file;            // current file
 WaveRP wave;            // wave file recorder/player
 mg2HW hw;
 //------------------------------------------------------------------------------
-
-
 
 long seekTo;
 unsigned char crush;
@@ -159,7 +148,3 @@ void loop() {
    readMidi();
    readMidi();
 }
-
-
-
-
