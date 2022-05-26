@@ -6,7 +6,7 @@
  * |_| |_| |_|\____|_____
  * 
  * 
- * microGranny 2.2
+ * microGranny 2.5
  * by Vaclav Pelousek      http://www.pelousek.net/
  * for Bastl Instruments   http://www.bastl-instruments.com/
  * 
