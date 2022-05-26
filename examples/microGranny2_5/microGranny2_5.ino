@@ -1,57 +1,54 @@
 /**
- * 
- * _ __ ___  / ___|___ \  
- * | '_ ` _ \| |  _  __) |
- * | | | | | | |_| |/ __/ 
- * |_| |_| |_|\____|_____
- * 
- * 
- * microGranny 2.5
- * by Vaclav Pelousek      http://www.pelousek.net/
- * for Bastl Instruments   http://www.bastl-instruments.com/
- * 
- * based on WaveRP library Adafruit Wave Shield - Copyright (C) 2009 by William Greiman
- * -library heavily hacked - BIG THX https://code.google.com/p/waverp/
- * 
- * needs SD Fat library too https://code.google.com/p/sdfatlib/
- *
- *
- *
- * -thanks for understanding basics thru Mozzi library http://sensorium.github.io/Mozzi/
- * -written in Arduino + using SDFat library
- *
- * 
- * beta testing and help: Ondrej Merta, Ryba, HRTL
- *
- * monophonic granular sampler
- * 
- * Features:
- * -6 big play buttons, 6 function buttons, 4 knobs, rgb led, 4 digit 7 segment display, bunch of leds
- * -6 samples with full adjustment in 1 preset
- * -12 presets
- * -wav sample playback from microSD card
- * -record wav via line or onboard microphone
- * -hold button
- * -sample rate (tuned or free run)
- * -crush
- * -start, end possition 
- * -looping mode
- * -instant loop
- * -granular loop lenght
- * -shift speed (possitive or negative)
- * -enevlope (attack, release)
- * -MIDI Input + MIDI thru
- * -responsive to note, cc and clock (synchronize loop and grains)
- * -randomizer
- * -copy paste
- * -input & output volume knob
- * -power switch
- * -wooden enclosure
- * 
- */
- 
+
+   _ __ ___  / ___|___ \
+   | '_ ` _ \| |  _  __) |
+   | | | | | | |_| |/ __/
+   |_| |_| |_|\____|_____
+
+   microGranny 2.5
+   by Vaclav Pelousek      http://www.pelousek.net/
+   for Bastl Instruments   http://www.bastl-instruments.com/
+
+   based on WaveRP library Adafruit Wave Shield - Copyright (C) 2009 by William Greiman
+   -library heavily hacked - BIG THX https://code.google.com/p/waverp/
+
+   needs SD Fat library too https://code.google.com/p/sdfatlib/
+
+   -thanks for understanding basics thru Mozzi library http://sensorium.github.io/Mozzi/
+   -written in Arduino + using SDFat library
+
+
+   beta testing and help: Ondrej Merta, Ryba, HRTL
+
+   monophonic granular sampler
+
+   Features:
+   -6 big play buttons, 6 function buttons, 4 knobs, rgb led, 4 digit 7 segment display, bunch of leds
+   -6 samples with full adjustment in 1 preset
+   -12 presets
+   -wav sample playback from microSD card
+   -record wav via line or onboard microphone
+   -hold button
+   -sample rate (tuned or free run)
+   -crush
+   -start, end possition
+   -looping mode
+   -instant loop
+   -granular loop lenght
+   -shift speed (possitive or negative)
+   -enevlope (attack, release)
+   -MIDI Input + MIDI thru
+   -responsive to note, cc and clock (synchronize loop and grains)
+   -randomizer
+   -copy paste
+   -input & output volume knob
+   -power switch
+   -wooden enclosure
+
+*/
+
 #define VERSION 0
- 
+
 #include <SdFat.h>
 #include <WaveRP.h>
 #include <SdFatUtil.h>
@@ -85,66 +82,45 @@ mg2HW hw;
 long seekTo;
 unsigned char crush;
 unsigned char volume;
-unsigned char currentPreset=0;
-unsigned char currentBank=0;
+unsigned char currentPreset = 0;
+unsigned char currentBank = 0;
 #define E_BANK 1001
 #define E_PRESET 1002
 
 void setup(void) {
 
   hw.initialize();
-  
+
   initSdCardAndReport();
- // Serial.begin(9600);
 
-//
-  if(!EEPROM.read(1000)) playBegin("ZZ.WAV",7),wave.setSampleRate(22050), wave.resume();
-  else EEPROM.write(1000,0),currentPreset=EEPROM.read(E_PRESET),currentBank=EEPROM.read(E_BANK);
+  if (!EEPROM.read(1000)) playBegin("ZZ.WAV", 7), wave.setSampleRate(22050), wave.resume();
+  else EEPROM.write(1000, 0), currentPreset = EEPROM.read(E_PRESET), currentBank = EEPROM.read(E_BANK);
   initMidi();
-  
 
-  initMem(); 
-  //  clearMemmory();
+  initMem();
   restoreAnalogRead();
-  // hw.freezeAllKnobs();
- // timer2setup();
- pinMode(0,INPUT_PULLUP);
-  //pinMode(0,INPUT_PULLUP);
-}
-/*
-void timer2setup(){
-  TCCR2A =  (1<<WGM21);
-  TIMSK2 |= (1 << OCIE2A);
-  TCCR2B = B00000111;
-  OCR2A = (F_CPU / 1024) / 300;
-  TCNT2 = 0;
+  pinMode(0, INPUT_PULLUP);
 }
 
-ISR(TIMER2_COMPA_vect){
- 
-    //if(wave.matrixAvailable) 
-    hw.updateButtons();
-    hw.updateDisplay();
-}
-*/
 void restoreAnalogRead()
 {
-  ADCSRA=135; // default ARDUINO B10000111
+  ADCSRA = 135; // default ARDUINO B10000111
 }
 
 
-void software_Reset() // Restarts program from beginning but does not reset the peripherals and registers
+// Restarts program from beginning but does not reset the peripherals and registers
+void software_Reset()
 {
-  asm volatile ("  jmp 0");  
-} 
+  asm volatile ("  jmp 0");
+}
 
 void loop() {
   readMidi();//,hw.displayText("midi");
-   readMidi();
+  readMidi();
   UI();
-   readMidi();
-   readMidi();
+  readMidi();
+  readMidi();
   updateSound();
-   readMidi();
-   readMidi();
+  readMidi();
+  readMidi();
 }
